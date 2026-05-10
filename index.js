@@ -158,9 +158,11 @@ app.post("/touch", async (req, res) => {
 
 app.post("/post", async (req, res) => {
   try {
-    const { user_id, content } = req.body || {};
-    if (!user_id || !content?.trim()) {
-      return res.status(400).json({ error: "user_id and content are required" });
+    const { user_id, content, image_url } = req.body || {};
+     if (!user_id || (!content?.trim() && !image_url)) {
+      return res.status(400).json({
+      error: "user_id and either content or image_url are required",
+      });
     }
 
     const profile = await getProfile(user_id);
@@ -175,14 +177,15 @@ app.post("/post", async (req, res) => {
       headers: {
         Prefer: "return=minimal",
       },
-      body: JSON.stringify({
-        user_id,
-        username: profile.username,
-        avatar_url: profile.avatar_url || null,
-        content: content.trim(),
-        created_at: nowIso(),
-        expires_at,
-      }),
+body: JSON.stringify({
+  user_id,
+  username: profile.username,
+  avatar_url: profile.avatar_url || null,
+  content: content?.trim() || "",
+  image_url: image_url || null,
+  created_at: nowIso(),
+  expires_at,
+}),
     });
 
     res.json({ status: "posted", expires_at });
